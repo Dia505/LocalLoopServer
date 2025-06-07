@@ -72,7 +72,7 @@ const findById = async (req, res) => {
 
 const deleteById = async (req, res) => {
     try {
-        const eventExplorer = await EventExplorer.findByIdAndDelete(req.params.id);
+        await EventExplorer.findByIdAndDelete(req.params.id);
         res.status(200).json("Data deleted");
     }
     catch (e) {
