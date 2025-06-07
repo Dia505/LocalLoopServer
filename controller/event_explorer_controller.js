@@ -72,13 +72,18 @@ const findById = async (req, res) => {
 
 const deleteById = async (req, res) => {
     try {
-        await EventExplorer.findByIdAndDelete(req.params.id);
-        res.status(200).json("Data deleted");
+        const deletedExplorer = await EventExplorer.findByIdAndDelete(req.params.id);
+
+        if (!deletedExplorer) {
+            return res.status(404).json({ message: "Event explorer not found" });
+        }
+
+        res.status(200).json({ message: "Event explorer deleted successfully" });
+    } catch (e) {
+        console.error("Delete Error:", e);
+        res.status(500).json({ message: "An error occurred while deleting the event explorer", error: e.message });
     }
-    catch (e) {
-        res.json(e)
-    }
-}
+};
 
 const update = async (req, res) => {
     try {

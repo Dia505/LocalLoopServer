@@ -11,15 +11,16 @@ app.use(express.json());
 
 const eventExplorerRouter = require("./route/event_explorer_route");
 const eventOrganizerRouter = require("./route/event_organizer_route");
+const eventRouter = require("./route/event_route");
 
-app.use("/api/event-explorer", eventExplorerRouter)
-app.use("/api/event-organizer", eventOrganizerRouter)
+app.use("/api/event-explorer", eventExplorerRouter);
+app.use("/api/event-organizer", eventOrganizerRouter);
+app.use("/api/event", eventRouter);
 
-const eventExplorerImagesPath = path.join(__dirname, "event_explorer_images");
-app.use("/event_explorer_images", express.static(eventExplorerImagesPath));
-
-const eventOrganizerImagesPath = path.join(__dirname, "event_organizer_images");
-app.use("/event_organizer_images", express.static(eventOrganizerImagesPath));
+app.use("/event-explorer-images", express.static(path.join(__dirname, "event_explorer_images")));
+app.use("/event-organizer-images", express.static(path.join(__dirname, "event_organizer_images")));
+app.use("/event-images", express.static(path.join(__dirname, "event_images")));
+app.use("/event-videos", express.static(path.join(__dirname, "event_videos")));
 
 const port = 3000;
 app.listen(port, () => {

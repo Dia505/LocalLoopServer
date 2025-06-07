@@ -78,13 +78,18 @@ const findById = async (req, res) => {
 
 const deleteById = async (req, res) => {
     try {
-        await EventOrganizer.findByIdAndDelete(req.params.id);
-        res.status(200).json("Data deleted");
+        const deletedOrganizer = await EventOrganizer.findByIdAndDelete(req.params.id);
+
+        if (!deletedOrganizer) {
+            return res.status(404).json({ message: "Event organizer not found" });
+        }
+
+        res.status(200).json({ message: "Event organizer deleted successfully" });
+    } catch (e) {
+        console.error("Delete Error:", e);
+        res.status(500).json({ message: "An error occurred while deleting the event organizer", error: e.message });
     }
-    catch (e) {
-        res.json(e)
-    }
-}
+};
 
 const update = async (req, res) => {
     try {
