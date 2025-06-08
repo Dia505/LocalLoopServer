@@ -12,10 +12,12 @@ app.use(express.json());
 const eventExplorerRouter = require("./route/event_explorer_route");
 const eventOrganizerRouter = require("./route/event_organizer_route");
 const eventRouter = require("./route/event_route");
+const ticketRouter = require("./route/ticket_route");
 
 app.use("/api/event-explorer", eventExplorerRouter);
 app.use("/api/event-organizer", eventOrganizerRouter);
 app.use("/api/event", eventRouter);
+app.use("/api/ticket", ticketRouter);
 
 app.use("/event-explorer-images", express.static(path.join(__dirname, "event_explorer_images")));
 app.use("/event-organizer-images", express.static(path.join(__dirname, "event_organizer_images")));

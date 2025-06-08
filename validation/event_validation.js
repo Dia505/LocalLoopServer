@@ -12,7 +12,7 @@ const eventSchema = joi.object({
     endTime: joi.string(),
     isPaid: joi.boolean().required(),
     totalSeats: joi.number().min(1),
-    eventOrganizerId: joi.string()
+    eventOrganizerId: joi.string().required()
 });
 
 function eventValidation(req, res, next) {
@@ -22,7 +22,7 @@ function eventValidation(req, res, next) {
         return res.status(400).json({ message: "Validation failed", details: error.details });
     }
 
-    req.body = value; // ✅ this is essential
+    req.body = value; 
     next();
 }
 

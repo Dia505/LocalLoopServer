@@ -59,8 +59,8 @@ const eventSchema = new mongoose.Schema({
         ref: "EventOrganizer",
         required: true
     }
-})
+});
 
-const Event = mongoose.model("Event", eventSchema)
+const Event = mongoose.model("Event", eventSchema);
 
 module.exports = Event;
