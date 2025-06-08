@@ -17,7 +17,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage })
 
 router.get("/", findAll);
-router.post("/", upload.single("profilePicture"), eventOrganizerValidation, save);
+router.post("/", authenticateToken, authorizeRole("event organizer"), upload.single("profilePicture"), eventOrganizerValidation, save);
 router.get("/:id", authenticateToken, authorizeRole("event organizer"), findById);
 router.delete("/:id", authenticateToken, authorizeRole("event organizer"), deleteById);
 router.put("/:id", authenticateToken, authorizeRole("event organizer"), update);

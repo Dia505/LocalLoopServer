@@ -12,14 +12,21 @@ const findAll = async (req, res) => {
 
 const save = async (req, res) => {
     try {
-        const event = new Event(req.body);
+        const eventData = {
+            ...(req.body.value || req.body),
+            eventPhoto: req.files["eventPhoto"] ? req.files["eventPhoto"][0].filename : undefined,
+            eventVideo: req.files["eventVideo"] ? req.files["eventVideo"].map(file => file.filename) : [],
+        };
+
+        const event = new Event(eventData);
         await event.save();
-        res.status(201).json(event)
+
+        res.status(201).json(event);
+    } catch (e) {
+        console.error("Error creating event:", e);
+        res.status(500).json({ message: "Error creating event", error: e.message });
     }
-    catch (e) {
-        res.json(e)
-    }
-}
+};
 
 const findById = async (req, res) => {
     try {
@@ -33,8 +40,8 @@ const findById = async (req, res) => {
 
 const findByEventOrganizerId = async (req, res) => {
     try {
-        const {eventOrganizerId} = req.params;
-        const event = await Event.find({eventOrganizerId}).populate("eventOrganizerId");
+        const { eventOrganizerId } = req.params;
+        const event = await Event.find({ eventOrganizerId }).populate("eventOrganizerId");
         res.status(200).json(event);
     }
     catch (e) {
@@ -45,7 +52,7 @@ const findByEventOrganizerId = async (req, res) => {
 const deleteById = async (req, res) => {
     try {
         const deletedEvent = await Event.findByIdAndDelete(req.params.id);
-        
+
         if (!deletedEvent) {
             return res.status(404).json({ message: "Event not found" });
         }
@@ -59,7 +66,7 @@ const deleteById = async (req, res) => {
 
 const update = async (req, res) => {
     try {
-        const event = await Event.findByIdAndUpdate(req.params.id, req.body, {new: true});
+        const event = await Event.findByIdAndUpdate(req.params.id, req.body, { new: true });
         res.status(201).json(event);
     }
     catch (e) {
@@ -85,7 +92,7 @@ const updateEventPhoto = async (req, res) => {
     } catch (e) {
         res.status(500).json(e);
     }
-}; 
+};
 
 const updateEventVideo = async (req, res) => {
     try {
@@ -119,6 +126,64 @@ const updateEventVideo = async (req, res) => {
     }
 };
 
+const searchEvents = async (req, res) => {
+    const { query } = req.query;
+    if (!query) return res.status(400).json({ message: "Missing search query" });
+
+    const keywords = query.trim().toLowerCase().split(/\s+/);
+
+    let isPaidFilter = null;
+
+    // Check for keywords like "free" or "paid"
+    if (keywords.includes("free")) {
+        isPaidFilter = false;
+    } else if (keywords.includes("paid")) {
+        isPaidFilter = true;
+    }
+
+    const orFilters = [];
+
+    keywords.forEach(word => {
+        if (word !== "free" && word !== "paid") {
+            orFilters.push(
+                { title: { $regex: word, $options: "i" } },
+                { city: { $regex: word, $options: "i" } },
+                { eventType: { $regex: word, $options: "i" } },
+                { venue: { $regex: word, $options: "i" } }
+            );
+        }
+    });
+
+    if (isPaidFilter !== null) {
+        orFilters.push({ isPaid: isPaidFilter });
+    }
+
+    const searchFilter = { $or: orFilters };
+
+    try {
+        const events = await Event.find(searchFilter);
+        res.json(events);
+    } catch (e) {
+        res.status(500).json({ message: "Search failed", error: e.message });
+    }
+};
+
+const filterEvents = async (req, res) => {
+    try {
+        const { city, eventType, isPaid } = req.query;
+
+        const filter = {};
+        if (city) filter.city = city;
+        if (eventType) filter.eventType = eventType;
+        if (isPaid !== undefined) filter.isPaid = isPaid === 'true'; 
+
+        const events = await Event.find(filter);
+        res.status(200).json(events);
+    } catch (err) {
+        res.status(500).json({ message: "Error filtering events", error: err.message });
+    }
+};
+
 module.exports = {
     findAll,
     save,
@@ -127,5 +192,7 @@ module.exports = {
     deleteById,
     update,
     updateEventPhoto,
-    updateEventVideo
+    updateEventVideo,
+    searchEvents,
+    filterEvents
 }

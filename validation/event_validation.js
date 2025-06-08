@@ -11,17 +11,19 @@ const eventSchema = joi.object({
     startTime: joi.string().required(),
     endTime: joi.string(),
     isPaid: joi.boolean().required(),
-    totalSeats: joi.number().min(1)
+    totalSeats: joi.number().min(1),
+    eventOrganizerId: joi.string()
 });
 
 function eventValidation(req, res, next) {
-    const {title, subtitle, eventType, venue, address, city, date, startTime, endTime, isPaid, totalSeats} = req.body;
-    const error = eventSchema.validate({title, subtitle, eventType, venue, address, city, date, startTime, endTime, isPaid, totalSeats});
+    const { error, value } = eventSchema.validate(req.body, { abortEarly: false });
 
-    if(error) {
-        return res.json(error)
+    if (error) {
+        return res.status(400).json({ message: "Validation failed", details: error.details });
     }
-    next()
+
+    req.body = value; // ✅ this is essential
+    next();
 }
 
 module.exports = eventValidation;
