@@ -12,10 +12,13 @@ const findAll = async (req, res) => {
 
 const save = async (req, res) => {
     try {
+        const eventOrganizerId = req.user.id;
+
         const eventData = {
             ...(req.body.value || req.body),
             eventPhoto: req.files["eventPhoto"] ? req.files["eventPhoto"][0].filename : undefined,
             eventVideo: req.files["eventVideo"] ? req.files["eventVideo"].map(file => file.filename) : [],
+            eventOrganizerId
         };
 
         const event = new Event(eventData);
@@ -48,6 +51,22 @@ const findByEventOrganizerId = async (req, res) => {
         res.json(e)
     }
 }
+
+const findUpcomingEvents = async (req, res) => {
+  try {
+    const eventOrganizerId = req.user.id;
+    const now = new Date();
+
+    const events = await Event.find({
+      eventOrganizerId,
+      date: { $gte: now }  
+    }).populate("eventOrganizerId");
+
+    res.status(200).json(events);
+  } catch (e) {
+    res.status(500).json({ message: "Error fetching upcoming events", error: e.message });
+  }
+};
 
 const deleteById = async (req, res) => {
     try {
@@ -189,6 +208,7 @@ module.exports = {
     save,
     findById,
     findByEventOrganizerId,
+    findUpcomingEvents,
     deleteById,
     update,
     updateEventPhoto,

@@ -19,7 +19,7 @@ const findAll = async (req, res) => {
 
 const save = async (req, res) => {
     try {
-        const { ticketId, quantity, paymentType } = req.body;
+        const { ticketId, quantity, paymentMethod } = req.body;
 
         const eventExplorerId = req.user.id;
 
@@ -30,11 +30,15 @@ const save = async (req, res) => {
 
         const totalPrice = ticket.ticketPrice * quantity;
 
+        //Increment "sold" column of the ticket
+        ticket.sold += quantity;
+        await ticket.save();
+
         const purchasedTicket = new PurchasedTicket({
             ticketId,
             quantity,
             totalPrice,
-            paymentType,
+            paymentMethod,
             eventExplorerId
         });
 
