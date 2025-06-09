@@ -133,16 +133,24 @@ const deleteById = async (req, res) => {
     }
 };
 
-
 const update = async (req, res) => {
     try {
-        const event = await Event.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const updateFields = { ...req.body };
+
+        if (req.body.date) {
+            const newDate = new Date(req.body.date);
+            const archivedDate = new Date(newDate);
+            archivedDate.setDate(archivedDate.getDate() + 1);
+
+            updateFields.archivedDate = archivedDate;
+        }
+
+        const event = await Event.findByIdAndUpdate(req.params.id, updateFields, { new: true });
         res.status(201).json(event);
+    } catch (e) {
+        res.status(500).json({ message: "Error updating event", error: e.message });
     }
-    catch (e) {
-        res.json(e)
-    }
-}
+};
 
 const updateEventPhoto = async (req, res) => {
     if (!req.file) {

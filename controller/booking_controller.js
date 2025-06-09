@@ -30,14 +30,14 @@ const save = async (req, res) => {
 };
 
 const findByEventId = async (req, res) => {
-    try {
-        const { eventId } = req.params;
-        const booking = await Booking.find({ eventId }).populate("eventId").populate("eventExplorerId");
-        res.status(200).json(booking);
-    }
-    catch (e) {
-        res.json(e)
-    }
+  try {
+    const { eventId } = req.params;
+    const booking = await Booking.find({ eventId }).populate("eventId").populate("eventExplorerId");
+    res.status(200).json(booking);
+  }
+  catch (e) {
+    res.json(e)
+  }
 }
 
 const findUpcomingBooking = async (req, res) => {
@@ -82,10 +82,10 @@ const findPastBooking = async (req, res) => {
   }
 };
 
-module.exports({
-    findAll,
-    save,
-    findByEventId,
-    findUpcomingBooking,
-    findPastBooking
-})
+module.exports = {
+  findAll,
+  save,
+  findByEventId,
+  findUpcomingBooking,
+  findPastBooking
+}

@@ -1,6 +1,6 @@
 const cron = require("node-cron");
-const Event = require("./models/Event");
-const Ticket = require("./models/Ticket");
+const Event = require("../model/event");
+const Ticket = require("../model/ticket");
 
 cron.schedule("0 0 * * *", async () => {
     try {

@@ -66,7 +66,7 @@ const eventSchema = new mongoose.Schema({
 });
 
 eventSchema.pre("save", function (next) {
-    if (this.isModified("date") || !this.archivedDate) {
+    if (this.isNew || !this.archivedDate) {
         const oneDayAfter = new Date(this.date);
         oneDayAfter.setDate(oneDayAfter.getDate() + 1);
         this.archivedDate = oneDayAfter;

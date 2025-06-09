@@ -11,8 +11,7 @@ const eventSchema = joi.object({
     startTime: joi.string().required(),
     endTime: joi.string(),
     isPaid: joi.boolean().required(),
-    totalSeats: joi.number().min(1),
-    eventOrganizerId: joi.string().required()
+    totalSeats: joi.number().min(1)
 });
 
 function eventValidation(req, res, next) {
