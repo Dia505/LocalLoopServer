@@ -17,6 +17,7 @@ const eventOrganizerRouter = require("./route/event_organizer_route");
 const eventRouter = require("./route/event_route");
 const ticketRouter = require("./route/ticket_route");
 const purchasedTicketRouter = require("./route/purchased_ticket_route");
+const bookingRouter = require("./route/booking_route");
 
 app.use("/api/auth", authRouter);
 app.use("/api/event-explorer", eventExplorerRouter);
@@ -24,6 +25,7 @@ app.use("/api/event-organizer", eventOrganizerRouter);
 app.use("/api/event", eventRouter);
 app.use("/api/ticket", ticketRouter);
 app.use("/api/purchased-ticket", purchasedTicketRouter);
+app.use("/api/booking", bookingRouter);
 
 app.use("/event-explorer-images", express.static(path.join(__dirname, "event_explorer_images")));
 app.use("/event-organizer-images", express.static(path.join(__dirname, "event_organizer_images")));
