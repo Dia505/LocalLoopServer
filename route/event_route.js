@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { findAll, save, findById, findByEventOrganizerId, findUpcomingEvents, deleteById, update, updateEventPhoto, updateEventVideo, searchEvents, filterEvents } = require("../controller/event_controller");
+const { findAll, save, findById, findByEventOrganizerId, findUpcomingEvents, findUpcomingEventsByType, findArchivedEvents, deleteById, update, updateEventPhoto, updateEventVideo, searchEvents, filterEvents, getHomeEvents } = require("../controller/event_controller");
 const eventValidation = require("../validation/event_validation");
 const { authenticateToken } = require("../security/auth")
 const { authorizeRole } = require("../security/auth");
@@ -22,13 +22,16 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+router.get("/home-events", getHomeEvents);
 router.get("/search", searchEvents);
 router.get("/filter", filterEvents);
 router.get("/", findAll);
 router.post("/", authenticateToken, authorizeRole("event organizer"), upload.fields([{ name: "eventPhoto", maxCount: 1 }, { name: "eventVideo", maxCount: 5 }]), eventValidation, save);
-router.get("/upcoming", authenticateToken, authorizeRole("event organizer"), findUpcomingEvents);
-router.get("/:id", authenticateToken, authorizeRole("event organizer", "event explorer"), findById);
-router.get("/event-organizer/:eventOrganizerId", authenticateToken, authorizeRole("event organizer", "event explorer"), findByEventOrganizerId);
+router.get("/upcoming", findUpcomingEvents);
+router.get("/past", authenticateToken, authorizeRole("event organizer"), findArchivedEvents);
+router.get("/:id", findById);
+router.get("/event-organizer/:eventOrganizerId", findByEventOrganizerId);
+router.get("/event-type/:type", findUpcomingEventsByType);
 router.delete("/:id", authenticateToken, authorizeRole("event organizer"), deleteById);
 router.put("/:id", authenticateToken, authorizeRole("event organizer"), update);
 router.put("/:id/event-photo", authenticateToken, authorizeRole("event organizer"), upload.single("eventPhoto"), updateEventPhoto);

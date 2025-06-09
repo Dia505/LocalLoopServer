@@ -7,6 +7,8 @@ const path = require("path");
 
 connectDb();
 
+require("./scheduled_jobs/auto_delete_archive");
+
 app.use(express.json());
 
 const authRouter = require("./route/auth_route");

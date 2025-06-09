@@ -1,4 +1,6 @@
 const Event = require("../model/event");
+const EventExplorer = require("../model/event_explorer");
+const Ticket = require("../model/ticket"); 
 
 const findAll = async (req, res) => {
     try {
@@ -53,27 +55,75 @@ const findByEventOrganizerId = async (req, res) => {
 }
 
 const findUpcomingEvents = async (req, res) => {
-  try {
-    const eventOrganizerId = req.user.id;
-    const now = new Date();
+    try {
+        const eventOrganizerId = req.user.id;
+        const now = new Date();
 
-    const events = await Event.find({
-      eventOrganizerId,
-      date: { $gte: now }  
-    }).populate("eventOrganizerId");
+        const events = await Event.find({
+            eventOrganizerId,
+            date: { $gte: now }
+        }).populate("eventOrganizerId");
 
-    res.status(200).json(events);
-  } catch (e) {
-    res.status(500).json({ message: "Error fetching upcoming events", error: e.message });
-  }
+        res.status(200).json(events);
+    } catch (e) {
+        res.status(500).json({ message: "Error fetching upcoming events", error: e.message });
+    }
+};
+
+const findUpcomingEventsByType = async (req, res) => {
+    try {
+        const { eventType } = req.query;
+        if (!eventType) {
+            return res.status(400).json({ message: "Missing eventType query parameter" });
+        }
+
+        const now = new Date();
+
+        const events = await Event.find({
+            eventType: eventType,
+            date: { $gte: now }
+        }).populate("eventOrganizerId");
+
+        res.status(200).json(events);
+    } catch (e) {
+        res.status(500).json({ message: "Error fetching upcoming events by type", error: e.message });
+    }
+};
+
+const findArchivedEvents = async (req, res) => {
+    try {
+        const eventOrganizerId = req.user.id;
+        const now = new Date();
+
+        // const events = await Event.find({
+        //     eventOrganizerId,
+        //     date: { $lt: now }
+        // }).populate("eventOrganizerId");
+
+        const events = await Event.find({
+            eventOrganizerId,
+            archivedDate: { $lte: now }
+        }).populate("eventOrganizerId");
+
+        res.status(200).json(events);
+    } catch (e) {
+        res.status(500).json({ message: "Error fetching archived events", error: e.message });
+    }
 };
 
 const deleteById = async (req, res) => {
     try {
-        const deletedEvent = await Event.findByIdAndDelete(req.params.id);
+        const eventId = req.params.id;
+
+        const deletedEvent = await Event.findByIdAndDelete(eventId);
 
         if (!deletedEvent) {
             return res.status(404).json({ message: "Event not found" });
+        }
+
+        // If event was paid, delete its tickets
+        if (deletedEvent.isPaid) {
+            await Ticket.deleteMany({ eventId });
         }
 
         res.status(200).json({ message: "Event deleted successfully" });
@@ -82,6 +132,7 @@ const deleteById = async (req, res) => {
         res.status(500).json({ message: "An error occurred while deleting the event", error: e.message });
     }
 };
+
 
 const update = async (req, res) => {
     try {
@@ -177,14 +228,20 @@ const searchEvents = async (req, res) => {
         orFilters.push({ isPaid: isPaidFilter });
     }
 
-    const searchFilter = { $or: orFilters };
-
     try {
+        const now = new Date();
+
+        const searchFilter = {
+            $or: orFilters,
+            date: { $gte: now }  // only upcoming events
+        };
+
         const events = await Event.find(searchFilter);
         res.json(events);
     } catch (e) {
         res.status(500).json({ message: "Search failed", error: e.message });
     }
+
 };
 
 const filterEvents = async (req, res) => {
@@ -192,14 +249,61 @@ const filterEvents = async (req, res) => {
         const { city, eventType, isPaid } = req.query;
 
         const filter = {};
+
         if (city) filter.city = city;
         if (eventType) filter.eventType = eventType;
-        if (isPaid !== undefined) filter.isPaid = isPaid === 'true'; 
+        if (isPaid !== undefined) filter.isPaid = isPaid === 'true';
+
+        // Add filter for upcoming events (date today or later)
+        filter.date = { $gte: new Date() };
 
         const events = await Event.find(filter);
         res.status(200).json(events);
     } catch (err) {
         res.status(500).json({ message: "Error filtering events", error: err.message });
+    }
+};
+
+const getHomeEvents = async (req, res) => {
+    try {
+        const now = new Date();
+        let events = [];
+
+        if (req.user && req.user.id) {
+            // Logged-in user: get city from profile
+            const eventExplorer = await EventExplorer.findById(req.user.id);
+            const city = eventExplorer?.city;
+
+            if (city) {
+                // Find events in user city
+                events = await Event.find({ city, date: { $gte: now } })
+                    .sort({ date: 1 })
+                    .limit(6);
+
+                // If less than 6, fill with other cities
+                if (events.length < 6) {
+                    const remaining = 6 - events.length;
+
+                    const fallbackEvents = await Event.find({ date: { $gte: now }, city: { $ne: city } })
+                        .sort({ date: 1 })
+                        .limit(remaining);
+
+                    events = events.concat(fallbackEvents);
+                }
+            }
+        }
+
+        // If not logged in or city missing, show 6 random upcoming events
+        if (!events.length) {
+            events = await Event.aggregate([
+                { $match: { date: { $gte: now } } },
+                { $sample: { size: 6 } }
+            ]);
+        }
+
+        res.json(events);
+    } catch (e) {
+        res.status(500).json({ message: "Error fetching home events", error: e.message });
     }
 };
 
@@ -209,10 +313,13 @@ module.exports = {
     findById,
     findByEventOrganizerId,
     findUpcomingEvents,
+    findUpcomingEventsByType,
+    findArchivedEvents,
     deleteById,
     update,
     updateEventPhoto,
     updateEventVideo,
     searchEvents,
-    filterEvents
+    filterEvents,
+    getHomeEvents
 }

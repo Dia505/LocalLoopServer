@@ -54,11 +54,24 @@ const eventSchema = new mongoose.Schema({
         type: Number,
         required: false
     },
+    archivedDate: {
+        type: Date,
+        default: null,
+    },
     eventOrganizerId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "EventOrganizer",
         required: true
     }
+});
+
+eventSchema.pre("save", function (next) {
+    if (this.isModified("date") || !this.archivedDate) {
+        const oneDayAfter = new Date(this.date);
+        oneDayAfter.setDate(oneDayAfter.getDate() + 1);
+        this.archivedDate = oneDayAfter;
+    }
+    next();
 });
 
 const Event = mongoose.model("Event", eventSchema);

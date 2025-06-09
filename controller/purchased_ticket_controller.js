@@ -2,84 +2,84 @@ const PurchasedTicket = require("../model/purchased_ticket");
 const Ticket = require("../model/ticket");
 
 const findAll = async (req, res) => {
-    try {
-        const purchasedTicket = await PurchasedTicket.find()
-            .populate({
-                path: "ticketId",
-                populate: {
-                    path: "eventId"
-                }
-            }).populate("eventExplorerId");
-        res.status(200).json(purchasedTicket);
-    }
-    catch (e) {
-        res.json(e)
-    }
+  try {
+    const purchasedTicket = await PurchasedTicket.find()
+      .populate({
+        path: "ticketId",
+        populate: {
+          path: "eventId"
+        }
+      }).populate("eventExplorerId");
+    res.status(200).json(purchasedTicket);
+  }
+  catch (e) {
+    res.json(e)
+  }
 }
 
 const save = async (req, res) => {
-    try {
-        const { ticketId, quantity, paymentMethod } = req.body;
+  try {
+    const { ticketId, quantity, paymentMethod } = req.body;
 
-        const eventExplorerId = req.user.id;
+    const eventExplorerId = req.user.id;
 
-        const ticket = await Ticket.findById(ticketId);
-        if (!ticket) {
-            return res.status(404).json({ message: "Ticket not found" });
-        }
-
-        const totalPrice = ticket.ticketPrice * quantity;
-
-        //Increment "sold" column of the ticket
-        ticket.sold += quantity;
-        await ticket.save();
-
-        const purchasedTicket = new PurchasedTicket({
-            ticketId,
-            quantity,
-            totalPrice,
-            paymentMethod,
-            eventExplorerId
-        });
-
-        await purchasedTicket.save();
-        res.status(201).json(purchasedTicket);
-    } catch (e) {
-        res.status(500).json({ message: "Error purchasing ticket", error: e.message });
+    const ticket = await Ticket.findById(ticketId);
+    if (!ticket) {
+      return res.status(404).json({ message: "Ticket not found" });
     }
+
+    const totalPrice = ticket.ticketPrice * quantity;
+
+    //Increment "sold" column of the ticket
+    ticket.sold += quantity;
+    await ticket.save();
+
+    const purchasedTicket = new PurchasedTicket({
+      ticketId,
+      quantity,
+      totalPrice,
+      paymentMethod,
+      eventExplorerId
+    });
+
+    await purchasedTicket.save();
+    res.status(201).json(purchasedTicket);
+  } catch (e) {
+    res.status(500).json({ message: "Error purchasing ticket", error: e.message });
+  }
 };
 
 const findById = async (req, res) => {
-    try {
-        const purchasedTicket = await PurchasedTicket.findById(req.params.id)
-            .populate({
-                path: "ticketId",
-                populate: {
-                    path: "eventId"
-                }
-            }).populate("eventExplorerId");
-        res.status(200).json(purchasedTicket);
-    }
-    catch (e) {
-        res.json(e)
-    }
+  try {
+    const purchasedTicket = await PurchasedTicket.findById(req.params.id)
+      .populate({
+        path: "ticketId",
+        populate: {
+          path: "eventId"
+        }
+      }).populate("eventExplorerId");
+    res.status(200).json(purchasedTicket);
+  }
+  catch (e) {
+    res.json(e)
+  }
 }
 
 const findByEventExplorerId = async (req, res) => {
-    try {
-        const { eventExplorerId } = req.params;
-        const puchasedTicket = await PurchasedTicket.find({ eventExplorerId })
-            .populate({
-                path: "ticketId",
-                populate: {
-                    path: "eventId"
-                }
-            }).populate("eventExplorerId");
-        res.status(200).json(puchasedTicket);
-    }
-    catch (e) {
-        res.json(e)
-    }
+  try {
+    const { eventExplorerId } = req.params;
+    const puchasedTicket = await PurchasedTicket.find({ eventExplorerId })
+      .populate({
+        path: "ticketId",
+        populate: {
+          path: "eventId"
+        }
+      }).populate("eventExplorerId");
+    res.status(200).json(puchasedTicket);
+  }
+  catch (e) {
+    res.json(e)
+  }
 }
 
 const findUpcomingPurchasedTickets = async (req, res) => {
@@ -92,7 +92,7 @@ const findUpcomingPurchasedTickets = async (req, res) => {
         path: "ticketId",
         populate: {
           path: "eventId",
-          match: { date: { $gte: now } }, 
+          match: { date: { $gte: now } },
         },
       })
       .populate("eventExplorerId");
@@ -131,11 +131,11 @@ const findPastPurchasedTickets = async (req, res) => {
 
 
 module.exports = {
-    findAll,
-    save,
-    findById,
-    findByEventExplorerId,
-    findUpcomingPurchasedTickets,
-    findPastPurchasedTickets
+  findAll,
+  save,
+  findById,
+  findByEventExplorerId,
+  findUpcomingPurchasedTickets,
+  findPastPurchasedTickets
 }
 
