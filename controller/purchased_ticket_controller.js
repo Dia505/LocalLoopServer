@@ -23,7 +23,7 @@ const save = async (req, res) => {
 
     const eventExplorerId = req.user.id;
 
-    const ticket = await Ticket.findById(ticketId);
+    const ticket = await Ticket.findById(ticketId).populate("eventId");
     if (!ticket) {
       return res.status(404).json({ message: "Ticket not found" });
     }
@@ -36,6 +36,19 @@ const save = async (req, res) => {
 
     const purchasedTicket = new PurchasedTicket({
       ticketId,
+      ticketDetails: {
+        ticketType: ticket.ticketType,
+        ticketPrice: ticket.ticketPrice
+      },
+      eventDetails: {
+        title: ticket.eventId.title,
+        venue: ticket.eventId.venue,
+        city: ticket.eventId.city,
+        date: ticket.eventId.date,
+        startTime: ticket.eventId.startTime,
+        endTime: ticket.eventId.endTime,
+        eventPhoto: ticket.eventId.eventPhoto,
+      },
       quantity,
       totalPrice,
       paymentMethod,
@@ -129,6 +142,31 @@ const findPastPurchasedTickets = async (req, res) => {
   }
 };
 
+const deleteById = async (req, res) => {
+  try {
+    const deletedPurchasedTicket = await PurchasedTicket.findByIdAndDelete(req.params.id);
+
+    const ticketId = deletedPurchasedTicket.ticketId;
+    const quantity = deletedPurchasedTicket.quantity;
+
+    const ticket = await Ticket.findById(ticketId);
+    if (!ticket) {
+      return res.status(404).json({ message: "Ticket not found" });
+    }
+
+    ticket.sold -= quantity;
+    await ticket.save();
+
+    if (!deletedPurchasedTicket) {
+      return res.status(404).json({ message: "Purchased ticket not found" });
+    }
+
+    res.status(200).json({ message: "Purchased ticket deleted successfully" });
+  } catch (e) {
+    console.error("Delete Error:", e);
+    res.status(500).json({ message: "An error occurred while deleting the purchased ticket", error: e.message });
+  }
+};
 
 module.exports = {
   findAll,
@@ -136,6 +174,7 @@ module.exports = {
   findById,
   findByEventExplorerId,
   findUpcomingPurchasedTickets,
-  findPastPurchasedTickets
+  findPastPurchasedTickets,
+  deleteById
 }
 

@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { findAll, save, findById, findByEventExplorerId, findUpcomingPurchasedTickets, findPastPurchasedTickets } = require("../controller/purchased_ticket_controller");
+const { findAll, save, findById, findByEventExplorerId, findUpcomingPurchasedTickets, findPastPurchasedTickets, deleteById } = require("../controller/purchased_ticket_controller");
 const { authenticateToken } = require("../security/auth")
 const { authorizeRole } = require("../security/auth");
 
@@ -10,5 +10,6 @@ router.get("/upcoming", authenticateToken, authorizeRole("event explorer"), find
 router.get("/past", authenticateToken, authorizeRole("event explorer"), findPastPurchasedTickets);
 router.get("/event-explorer/:eventExplorerId", findByEventExplorerId);
 router.get("/:id", findById);
+router.delete("/:id", deleteById);
 
 module.exports = router;

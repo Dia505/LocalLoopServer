@@ -1,4 +1,3 @@
-const { required } = require("joi");
 const mongoose = require("mongoose");
 
 const bookingSchema = new mongoose.Schema({
@@ -15,6 +14,15 @@ const bookingSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Event",
         required: true
+    },
+    eventDetails: {
+        title: String,
+        eventPhoto: String,
+        venue: String,
+        city: String, 
+        date: Date,
+        startTime: String,
+        endTime: String
     }
 });
 

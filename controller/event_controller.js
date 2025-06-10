@@ -135,18 +135,38 @@ const deleteById = async (req, res) => {
 
 const update = async (req, res) => {
     try {
+        const eventId = req.params.id;
+
+        // Get the existing event from the DB
+        const existingEvent = await Event.findById(eventId);
+        if (!existingEvent) {
+            return res.status(404).json({ message: "Event not found" });
+        }
+
         const updateFields = { ...req.body };
 
+        // If the event date is being changed, update the archivedDate too
         if (req.body.date) {
             const newDate = new Date(req.body.date);
             const archivedDate = new Date(newDate);
             archivedDate.setDate(archivedDate.getDate() + 1);
-
             updateFields.archivedDate = archivedDate;
         }
 
-        const event = await Event.findByIdAndUpdate(req.params.id, updateFields, { new: true });
-        res.status(201).json(event);
+        // Check transition: Free → Paid
+        if (existingEvent.isPaid === false && req.body.isPaid === true) {
+            updateFields.totalSeats = 0;
+        }
+
+        // Check transition: Paid → Free
+        if (existingEvent.isPaid === true && req.body.isPaid === false) {
+            await Ticket.deleteMany({ eventId });
+        }
+
+        // Update the event
+        const updatedEvent = await Event.findByIdAndUpdate(eventId, updateFields, { new: true });
+
+        res.status(201).json(updatedEvent);
     } catch (e) {
         res.status(500).json({ message: "Error updating event", error: e.message });
     }

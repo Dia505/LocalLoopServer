@@ -29,6 +29,7 @@ const save = async (req, res) => {
         });
 
         await eventExplorer.save();
+        const savedUser = await EventExplorer.findById(eventExplorer._id);
 
         const token = jwt.sign(
             { role: eventExplorer.role, userId: eventExplorer._id },

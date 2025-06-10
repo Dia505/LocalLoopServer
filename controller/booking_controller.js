@@ -1,4 +1,5 @@
 const Booking = require("../model/booking");
+const Event = require("../model/event");
 
 const findAll = async (req, res) => {
   try {
@@ -16,10 +17,24 @@ const save = async (req, res) => {
 
     const eventExplorerId = req.user.id;
 
+    const event = await Event.findById(eventId);
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
     const booking = new Booking({
       seats,
       eventId,
-      eventExplorerId
+      eventExplorerId,
+      eventDetails: {
+        title: event.title,
+        venue: event.venue,
+        city: event.city,
+        date: event.date,
+        startTime: event.startTime,
+        endTime: event.endTime,
+        eventPhoto: event.eventPhoto,
+      },
     });
 
     await booking.save();

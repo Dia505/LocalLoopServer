@@ -6,6 +6,19 @@ const purchasedTicketSchema = new mongoose.Schema({
         ref: "Ticket",
         required: true
     },
+    ticketDetails: {
+        ticketType: String,
+        ticketPrice: Number, 
+    },
+    eventDetails: {
+        title: String,
+        eventPhoto: String,
+        venue: String,
+        city: String, 
+        date: Date,
+        startTime: String,
+        endTime: String
+    },
     quantity: {
         type: Number,
         required: true

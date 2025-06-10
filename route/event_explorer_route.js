@@ -18,9 +18,9 @@ const upload = multer({ storage })
 
 router.get("/", findAll);
 router.post("/", eventExplorerValidation, save);
-router.get("/:id", authenticateToken, authorizeRole("eventExplorer"), findById);
-router.delete("/:id", authenticateToken, authorizeRole("eventExplorer"), deleteById);
-router.put("/:id", authenticateToken, authorizeRole("eventExplorer"), update);
-router.put("/:id/profile-picture", authenticateToken, authorizeRole("eventExplorer"), upload.single("profilePicture"), updateProfilePicture);
+router.get("/:id", authenticateToken, authorizeRole("event explorer"), findById);
+router.delete("/:id", authenticateToken, authorizeRole("event explorer"), deleteById);
+router.put("/:id", authenticateToken, authorizeRole("event explorer"), update);
+router.put("/:id/profile-picture", authenticateToken, authorizeRole("event explorer"), upload.single("profilePicture"), updateProfilePicture);
 
 module.exports = router;
