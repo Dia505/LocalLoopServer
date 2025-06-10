@@ -39,7 +39,7 @@ const purchasedTicketSchema = new mongoose.Schema({
         ref: "EventExplorer",
         required: true
     },
-})
+});
 
 const PurchasedTicket = mongoose.model("PurchasedTicket", purchasedTicketSchema);
 

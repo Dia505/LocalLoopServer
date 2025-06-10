@@ -100,18 +100,20 @@ const findUpcomingPurchasedTickets = async (req, res) => {
     const eventExplorerId = req.user.id;
     const now = new Date();
 
-    const upcomingTickets = await PurchasedTicket.find({ eventExplorerId })
+    const purchasedTickets = await PurchasedTicket.find({ eventExplorerId })
       .populate({
         path: "ticketId",
         populate: {
-          path: "eventId",
-          match: { date: { $gte: now } },
-        },
+          path: "eventId"
+        }
       })
       .populate("eventExplorerId");
 
-    // Filter out tickets where eventId was not matched (because event is past)
-    const filteredTickets = upcomingTickets.filter(pt => pt.ticketId.eventId !== null);
+    // Filter based on copied eventDetails.date (fallback)
+    const filteredTickets = purchasedTickets.filter(pt => {
+      // Use copied date from purchased ticket document, which always exists
+      return pt.eventDetails.date && new Date(pt.eventDetails.date) >= now;
+    });
 
     res.status(200).json(filteredTickets);
   } catch (e) {
@@ -124,17 +126,19 @@ const findPastPurchasedTickets = async (req, res) => {
     const eventExplorerId = req.user.id;
     const now = new Date();
 
-    const pastTickets = await PurchasedTicket.find({ eventExplorerId })
+    const purchasedTickets = await PurchasedTicket.find({ eventExplorerId })
       .populate({
         path: "ticketId",
         populate: {
-          path: "eventId",
-          match: { date: { $lt: now } }, // event date is in the past
+          path: "eventId"
         },
       })
       .populate("eventExplorerId");
 
-    const filteredTickets = pastTickets.filter(pt => pt.ticketId.eventId !== null);
+    // Filter based on the saved eventDetails.date
+    const filteredTickets = purchasedTickets.filter(pt => {
+      return pt.eventDetails.date && new Date(pt.eventDetails.date) < now;
+    });
 
     res.status(200).json(filteredTickets);
   } catch (e) {
