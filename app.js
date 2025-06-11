@@ -4,8 +4,16 @@ const express = require("express");
 const app = express();
 const connectDb = require("./config/db");
 const path = require("path");
+const cors = require("cors");
 
 connectDb();
+
+app.use(cors({
+  origin: "http://localhost:5173",
+  methods: "GET,POST,PUT,DELETE", // Allowed HTTP methods
+  credentials: true,              // Allow cookies
+}));
+app.use(express.json());
 
 require("./scheduled_jobs/auto_delete_archive");
 

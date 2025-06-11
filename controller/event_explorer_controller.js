@@ -53,7 +53,7 @@ const save = async (req, res) => {
 
 const findById = async (req, res) => {
     try {
-        const eventExplorer = await EventExplorer.findById(req.params.id);
+        const eventExplorer = await EventExplorer.findById(req.user.id);
 
         if (!eventExplorer) {
             return res.status(404).json({ message: "Event explorer not found" });

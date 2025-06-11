@@ -11,12 +11,12 @@ const login = async (req, res) => {
             || await EventOrganizer.findOne({ email });
 
   if (!cred) {
-    return res.status(403).send("Incorrect email address");
+    return res.status(403).json({ field: "email", message: "Incorrect email address" });
   }
 
   const isMatch = await bcrypt.compare(password, cred.password);
   if (!isMatch) {
-    return res.status(403).send("Incorrect password");
+    return res.status(403).json({ field: "password", message: "Incorrect password" });
   }
 
   const token = jwt.sign(
