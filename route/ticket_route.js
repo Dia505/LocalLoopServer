@@ -7,7 +7,7 @@ const { authorizeRole } = require("../security/auth");
 
 router.get("/", findAll);
 router.post("/", authenticateToken, authorizeRole("event organizer"), ticketValidation, save);
-router.get("/event/:eventId", authenticateToken, authorizeRole("event organizer", "event explorer"), findByEventId);
+router.get("/event/:eventId", findByEventId);
 router.delete("/:id", authenticateToken, authorizeRole("event organizer"), deleteById);
 router.put("/:id", authenticateToken, authorizeRole("event organizer"), update);
 

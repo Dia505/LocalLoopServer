@@ -62,8 +62,8 @@ const findById = async (req, res) => {
         const BASE_URL = "http://localhost:3000";
 
         const profilePicture = eventExplorer.profilePicture
-            ? `${BASE_URL}/event_explorer_images/${eventExplorer.profilePicture}`
-            : `${BASE_URL}/event_explorer_images/default_profile_img.png`;
+            ? `${BASE_URL}/event-explorer-images/${eventExplorer.profilePicture}`
+            : `${BASE_URL}/event-explorer-images/default_profile_img.png`;
 
         res.status(200).json({ ...eventExplorer._doc, profilePicture: profilePicture });
     } catch (e) {

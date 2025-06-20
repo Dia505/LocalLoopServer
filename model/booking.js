@@ -19,7 +19,7 @@ const bookingSchema = new mongoose.Schema({
         title: String,
         eventPhoto: String,
         venue: String,
-        city: String, 
+        city: String,
         date: Date,
         startTime: String,
         endTime: String
