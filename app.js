@@ -44,7 +44,7 @@ app.use("/event-videos", express.static(path.join(__dirname, "event_videos")));
 
 const port = 3000;
 app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`)
+  console.log(`Server running at http://localhost:${port}`)
 })
 
 module.exports = { app };

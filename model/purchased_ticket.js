@@ -8,13 +8,13 @@ const purchasedTicketSchema = new mongoose.Schema({
     },
     ticketDetails: {
         ticketType: String,
-        ticketPrice: Number, 
+        ticketPrice: Number,
     },
     eventDetails: {
         title: String,
         eventPhoto: String,
         venue: String,
-        city: String, 
+        city: String,
         date: Date,
         startTime: String,
         endTime: String

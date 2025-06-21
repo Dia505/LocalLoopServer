@@ -1,5 +1,7 @@
 const PurchasedTicket = require("../model/purchased_ticket");
 const Ticket = require("../model/ticket");
+const EventExplorer = require("../model/event_explorer");
+const nodemailer = require("nodemailer");
 
 const findAll = async (req, res) => {
   try {
@@ -26,6 +28,11 @@ const save = async (req, res) => {
     const ticket = await Ticket.findById(ticketId).populate("eventId");
     if (!ticket) {
       return res.status(404).json({ message: "Ticket not found" });
+    }
+
+    const eventExplorer = await EventExplorer.findById(eventExplorerId);
+    if (!eventExplorer) {
+      return res.status(404).json({ message: "Event explorer not found" });
     }
 
     const totalPrice = ticket.ticketPrice * quantity;
@@ -56,6 +63,31 @@ const save = async (req, res) => {
     });
 
     await purchasedTicket.save();
+
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false,
+      protocol: "smtp",
+      auth: {
+        user: "localloop2025@gmail.com",
+        pass: "ejjpleiswwikbvmz"
+      }
+    });
+
+    await transporter.sendMail({
+      from: '"LocalLoop Support" <localloop2025@gmail.com>',
+      to: eventExplorer.email,
+      subject: "Ticket Purchase Confirmation",
+      html: `
+            <h1>Thank you for your purchase!</h1>
+            <p>You have successfully purchased <strong>${quantity}</strong> ticket(s) for <strong>${ticket.eventId.title}</strong>.</p>
+            <p><strong>Venue:</strong> ${ticket.eventId.venue}, ${ticket.eventId.city}</p>
+            <p><strong>Date:</strong> ${new Date(ticket.eventId.date).toLocaleDateString()}</p>
+            <p><strong>Time:</strong> ${ticket.eventId.startTime} - ${ticket.eventId.endTime}</p>
+          `
+    });
+
     res.status(201).json(purchasedTicket);
   } catch (e) {
     res.status(500).json({ message: "Error purchasing ticket", error: e.message });
