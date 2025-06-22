@@ -1,4 +1,5 @@
 const Ticket = require("../model/ticket");
+const Event = require("../model/event");
 
 const findAll = async (req, res) => {
     try {
@@ -57,10 +58,33 @@ const update = async (req, res) => {
     }
 }
 
+const totalTicketsOfUpcomingEvents = async (req, res) => {
+  try {
+    const { eventOrganizerId } = req.params;
+
+    const now = new Date();
+    const upcomingEvents = await Event.find({
+      eventOrganizerId,
+      date: { $gt: now } 
+    });
+
+    const eventIds = upcomingEvents.map(event => event._id);
+
+    const tickets = await Ticket.find({ eventId: { $in: eventIds } });
+
+    const totalTicketsSold = tickets.reduce((sum, ticket) => sum + (ticket.sold || 0), 0);
+
+    return res.status(200).json({ totalTicketsSold });
+  } catch (err) {
+    return res.status(500).json({ message: "Failed to calculate total tickets sold", error: err.message });
+  }
+};
+
 module.exports = {
     findAll,
     save,
     findByEventId,
     deleteById,
-    update
+    update,
+    totalTicketsOfUpcomingEvents
 }

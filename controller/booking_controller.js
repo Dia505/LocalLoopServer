@@ -129,10 +129,40 @@ const findPastBooking = async (req, res) => {
   }
 };
 
+const getTotalBookingsOfUpcomingEvents = async (req, res) => {
+  try {
+    const { eventOrganizerId } = req.params;
+    const now = new Date();
+
+    const upcomingEvents = await Event.find({
+      eventOrganizerId: eventOrganizerId,
+      date: { $gte: now }
+    });
+
+    const upcomingEventIds = upcomingEvents.map(event => event._id);
+
+    if (upcomingEventIds.length === 0) {
+      return res.json({ totalSeatsBooked: 0 });
+    }
+
+    const bookings = await Booking.find({
+      eventId: { $in: upcomingEventIds }
+    });
+
+    const totalSeatsBooked = bookings.reduce((acc, booking) => acc + booking.seats, 0);
+
+    res.status(200).json({ totalSeatsBooked });
+  } catch (error) {
+    console.error("Error fetching total bookings:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
 module.exports = {
   findAll,
   save,
   findByEventId,
   findUpcomingBooking,
-  findPastBooking
+  findPastBooking,
+  getTotalBookingsOfUpcomingEvents
 }
