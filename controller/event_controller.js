@@ -1,6 +1,6 @@
 const Event = require("../model/event");
 const EventExplorer = require("../model/event_explorer");
-const Ticket = require("../model/ticket"); 
+const Ticket = require("../model/ticket");
 
 const findAll = async (req, res) => {
     try {
@@ -56,7 +56,7 @@ const findByEventOrganizerId = async (req, res) => {
 
 const findUpcomingEvents = async (req, res) => {
     try {
-        const eventOrganizerId = req.user.id;
+        const { eventOrganizerId } = req.params;
         const now = new Date();
 
         const events = await Event.find({
