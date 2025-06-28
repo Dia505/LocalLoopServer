@@ -44,7 +44,26 @@ const deleteById = async (req, res) => {
         res.status(200).json({ message: "Ticket deleted successfully" });
     } catch (e) {
         console.error("Delete Error:", e);
-        res.status(500).json({ message: "An error occurred while deleting the icket", error: e.message });
+        res.status(500).json({ message: "An error occurred while deleting the ticket", error: e.message });
+    }
+};
+
+const deleteByEventId = async (req, res) => {
+    try {
+        const { eventId } = req.params;
+
+        const result = await Ticket.deleteMany({ eventId });
+
+        res.status(200).json({
+            message: "Tickets deleted successfully",
+            deletedCount: result.deletedCount,
+        });
+    } catch (e) {
+        console.error("Delete Error:", e);
+        res.status(500).json({
+            message: "An error occurred while deleting the tickets",
+            error: e.message,
+        });
     }
 };
 
@@ -59,25 +78,25 @@ const update = async (req, res) => {
 }
 
 const totalTicketsOfUpcomingEvents = async (req, res) => {
-  try {
-    const { eventOrganizerId } = req.params;
+    try {
+        const { eventOrganizerId } = req.params;
 
-    const now = new Date();
-    const upcomingEvents = await Event.find({
-      eventOrganizerId,
-      date: { $gt: now } 
-    });
+        const now = new Date();
+        const upcomingEvents = await Event.find({
+            eventOrganizerId,
+            date: { $gt: now }
+        });
 
-    const eventIds = upcomingEvents.map(event => event._id);
+        const eventIds = upcomingEvents.map(event => event._id);
 
-    const tickets = await Ticket.find({ eventId: { $in: eventIds } });
+        const tickets = await Ticket.find({ eventId: { $in: eventIds } });
 
-    const totalTicketsSold = tickets.reduce((sum, ticket) => sum + (ticket.sold || 0), 0);
+        const totalTicketsSold = tickets.reduce((sum, ticket) => sum + (ticket.sold || 0), 0);
 
-    return res.status(200).json({ totalTicketsSold });
-  } catch (err) {
-    return res.status(500).json({ message: "Failed to calculate total tickets sold", error: err.message });
-  }
+        return res.status(200).json({ totalTicketsSold });
+    } catch (err) {
+        return res.status(500).json({ message: "Failed to calculate total tickets sold", error: err.message });
+    }
 };
 
 module.exports = {
@@ -85,6 +104,7 @@ module.exports = {
     save,
     findByEventId,
     deleteById,
+    deleteByEventId,
     update,
     totalTicketsOfUpcomingEvents
 }

@@ -67,8 +67,8 @@ const findById = async (req, res) => {
         const BASE_URL = "http://localhost:3000";
 
         const profilePicture = eventOrganizer.profilePicture
-            ? `${BASE_URL}/event_organizer_images/${eventOrganizer.profilePicture}`
-            : `${BASE_URL}/event_organizer_images/default_profile_img.png`;
+            ? `${BASE_URL}/event-organizer-images/${eventOrganizer.profilePicture}`
+            : `${BASE_URL}/event-organizer-images/default_profile_img.png`;
 
         res.status(200).json({ ...eventOrganizer._doc, profilePicture: profilePicture });
     } catch (e) {
