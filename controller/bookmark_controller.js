@@ -31,24 +31,34 @@ const save = async (req, res) => {
 const findByEventExplorerId = async (req, res) => {
     try {
         const eventExplorerId = req.user.id;
-        const bookmark = await Bookmark.find({ eventExplorerId }).populate("eventExplorerId").populate("eventId");
-        res.status(200).json(bookmark);
+
+        const bookmarks = await Bookmark.find({ eventExplorerId })
+            .populate({
+                path: "eventId",
+                match: { date: { $gte: new Date() } }, // <-- Only upcoming events
+            })
+            .populate("eventExplorerId");
+
+        // Filter out any bookmarks where eventId is null (i.e., filtered out by `match`)
+        const upcomingBookmarks = bookmarks.filter(b => b.eventId !== null);
+
+        res.status(200).json(upcomingBookmarks);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
     }
-    catch (e) {
-        res.json(e)
-    }
-}
+};
+
 
 const getBookmarkCountByEventId = async (req, res) => {
-  try {
-    const { eventId } = req.params;
+    try {
+        const { eventId } = req.params;
 
-    const count = await Bookmark.countDocuments({ eventId }).populate("eventExplorerId").populate("eventId");
+        const count = await Bookmark.countDocuments({ eventId }).populate("eventExplorerId").populate("eventId");
 
-    res.status(200).json({ eventId, totalBookmarks: count });
-  } catch (e) {
-    res.status(500).json({ message: "Error counting bookmarks", error: e.message });
-  }
+        res.status(200).json({ eventId, totalBookmarks: count });
+    } catch (e) {
+        res.status(500).json({ message: "Error counting bookmarks", error: e.message });
+    }
 };
 
 const removeById = async (req, res) => {
