@@ -27,6 +27,7 @@ const ticketRouter = require("./route/ticket_route");
 const purchasedTicketRouter = require("./route/purchased_ticket_route");
 const bookingRouter = require("./route/booking_route");
 const bookmarkRouter = require("./route/bookmark_route");
+const galleryRouter = require("./route/gallery_route");
 
 app.use("/api/auth", authRouter);
 app.use("/api/event-explorer", eventExplorerRouter);
@@ -36,11 +37,15 @@ app.use("/api/ticket", ticketRouter);
 app.use("/api/purchased-ticket", purchasedTicketRouter);
 app.use("/api/booking", bookingRouter);
 app.use("/api/bookmark", bookmarkRouter);
+app.use("/api/gallery", galleryRouter);
 
 app.use("/event-explorer-images", express.static(path.join(__dirname, "event_explorer_images")));
 app.use("/event-organizer-images", express.static(path.join(__dirname, "event_organizer_images")));
 app.use("/event-images", express.static(path.join(__dirname, "event_images")));
 app.use("/event-videos", express.static(path.join(__dirname, "event_videos")));
+app.use("/gallery-images", express.static(path.join(__dirname, "gallery-images")));
+app.use("/gallery-cover-images", express.static(path.join(__dirname, "gallery-cover-images")));
+app.use("/gallery-company-images", express.static(path.join(__dirname, "gallery-company-images")));
 
 const port = 3000;
 app.listen(port, () => {
