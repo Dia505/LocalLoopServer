@@ -76,10 +76,52 @@ const removeById = async (req, res) => {
     }
 };
 
+const getPendingNotifications = async (req, res) => {
+    try {
+        const eventExplorerId = req.user._id;
+
+        const pendingBookmarks = await Bookmark.find({
+            eventExplorerId: eventExplorerId,
+            $or: [
+                { notifiedFiveDaysBefore: true, notifiedFiveDaysRead: false },
+                { notifiedOneDayBefore: true, notifiedOneDayRead: false }
+            ]
+        }).populate('eventId').populate('eventId.eventOrganizerId');
+
+        res.status(200).json(pendingBookmarks);
+    } catch (error) {
+        res.status(500).json({ error: "Failed to fetch pending notifications" });
+    }
+};
+
+const markNotificationRead = async (req, res) => {
+    try {
+        const { bookmarkId, notificationType } = req.body;
+
+        const updateFields = {};
+
+        if (notificationType === "fiveDays") {
+            updateFields.notifiedFiveDaysRead = true;
+        } else if (notificationType === "oneDay") {
+            updateFields.notifiedOneDayRead = true;
+        } else {
+            return res.status(400).json({ error: "Invalid notification type" });
+        }
+
+        await Bookmark.findByIdAndUpdate(bookmarkId, updateFields);
+
+        res.status(200).json({ message: "Notification marked as read" });
+    } catch (error) {
+        res.status(500).json({ error: "Failed to mark notification as read" });
+    }
+};
+
 module.exports = {
     findAll,
     save,
     findByEventExplorerId,
     getBookmarkCountByEventId,
-    removeById
+    removeById,
+    getPendingNotifications,
+    markNotificationRead
 }

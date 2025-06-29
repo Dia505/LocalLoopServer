@@ -16,6 +16,7 @@ app.use(cors({
 app.use(express.json());
 
 require("./scheduled_jobs/auto_delete_archive");
+require("./scheduled_jobs/bookmark_notification");
 
 app.use(express.json());
 
@@ -43,9 +44,9 @@ app.use("/event-explorer-images", express.static(path.join(__dirname, "event_exp
 app.use("/event-organizer-images", express.static(path.join(__dirname, "event_organizer_images")));
 app.use("/event-images", express.static(path.join(__dirname, "event_images")));
 app.use("/event-videos", express.static(path.join(__dirname, "event_videos")));
-app.use("/gallery-images", express.static(path.join(__dirname, "gallery-images")));
-app.use("/gallery-cover-images", express.static(path.join(__dirname, "gallery-cover-images")));
-app.use("/gallery-company-images", express.static(path.join(__dirname, "gallery-company-images")));
+app.use("/gallery-images", express.static(path.join(__dirname, "gallery_images")));
+app.use("/gallery-cover-images", express.static(path.join(__dirname, "gallery_cover_images")));
+app.use("/gallery-company-images", express.static(path.join(__dirname, "gallery_company_images")));
 
 const port = 3000;
 app.listen(port, () => {

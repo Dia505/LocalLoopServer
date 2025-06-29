@@ -11,6 +11,22 @@ const bookmarkSchema = new mongoose.Schema({
         ref: "Event",
         required: true
     },
+    notifiedFiveDaysBefore: { 
+        type: Boolean, 
+        default: false 
+    },
+    notifiedFiveDaysRead: { 
+        type: Boolean, 
+        default: false 
+    },
+    notifiedOneDayBefore: { 
+        type: Boolean, 
+        default: false 
+    },
+    notifiedOneDayRead: { 
+        type: Boolean, 
+        default: false 
+    },
 })
 
 const Bookmark = mongoose.model("Bookmark", bookmarkSchema);
