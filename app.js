@@ -29,6 +29,7 @@ const purchasedTicketRouter = require("./route/purchased_ticket_route");
 const bookingRouter = require("./route/booking_route");
 const bookmarkRouter = require("./route/bookmark_route");
 const galleryRouter = require("./route/gallery_route");
+const otpResetPasswordRouter = require("./route/otp_reset_password_route");
 
 app.use("/api/auth", authRouter);
 app.use("/api/event-explorer", eventExplorerRouter);
@@ -39,6 +40,7 @@ app.use("/api/purchased-ticket", purchasedTicketRouter);
 app.use("/api/booking", bookingRouter);
 app.use("/api/bookmark", bookmarkRouter);
 app.use("/api/gallery", galleryRouter);
+app.use("/api/reset", otpResetPasswordRouter);
 
 app.use("/event-explorer-images", express.static(path.join(__dirname, "event_explorer_images")));
 app.use("/event-organizer-images", express.static(path.join(__dirname, "event_organizer_images")));

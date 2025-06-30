@@ -33,6 +33,14 @@ const eventExplorerSchema = new mongoose.Schema({
     role: {
         type: String,
         default: "event explorer"
+    },
+    otp: { 
+        type: String, 
+        required: false 
+    },
+    otpExpiresAt: { 
+        type: Date, 
+        required: false 
     }
 })
 

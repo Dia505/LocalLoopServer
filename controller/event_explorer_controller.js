@@ -2,6 +2,7 @@ const EventExplorer = require("../model/event_explorer");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const SECRET_KEY = process.env.SECRET_KEY;
+const nodemailer = require("nodemailer");
 
 const findAll = async (req, res) => {
     try {
@@ -127,11 +128,114 @@ const updateProfilePicture = async (req, res) => {
     }
 };
 
+const sendOtp = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const eventExplorer = await EventExplorer.findOne({ email });
+
+        if (!eventExplorer) return res.status(404).json({ message: "Event explorer not found" });
+
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+        const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
+
+        eventExplorer.otp = otp;
+        eventExplorer.otpExpiresAt = otpExpiresAt;
+        await eventExplorer.save();
+
+        const transporter = nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            port: 587,
+            secure: false,
+            protocol: "smtp",
+            auth: {
+                user: "localloop2025@gmail.com",
+                pass: "ejjpleiswwikbvmz"
+            }
+        })
+
+        await transporter.sendMail({
+           from: '"LocalLoop Support" <localloop2025@gmail.com>',
+            to: eventExplorer.email,
+            subject: "Reset Your Password",
+            html: `
+                <h1>Reset your password</h1>
+                <p>Use the following OTP to reset your password:</p>
+                <h2>${otp}</h2>
+                <p>If you did not request this, please ignore this email.</p>
+            `
+        });
+
+        res.status(200).json({ message: "OTP sent successfully" });
+    }
+    catch (error) {
+        console.error("Error sending OTP:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+const verifyOtp = async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+
+        const eventExplorer = await EventExplorer.findOne({ email });
+
+        if (!eventExplorer) {
+            return res.status(404).json({ message: "Event explorer not found" });
+        }
+
+        if (eventExplorer.otp !== otp) {
+            return res.status(400).json({ message: "Invalid OTP" });
+        }
+
+        if (eventExplorer.otpExpiresAt < Date.now()) {
+            return res.status(400).json({ message: "OTP has expired" });
+        }
+
+        res.status(200).json({ message: "OTP verified successfully" });
+    } catch (error) {
+        console.error("Error verifying OTP:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+const resetPassword = async (req, res) => {
+    try {
+        const { email, newPassword, otp } = req.body;
+
+        const eventExplorer = await EventExplorer.findOne({ email });
+
+        if (!eventExplorer) {
+            return res.status(404).json({ message: "Event explorer not found" });
+        }
+
+        if (eventExplorer.otp !== otp || eventExplorer.otpExpiresAt < Date.now()) {
+            return res.status(400).json({ message: "Invalid or expired OTP" });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        await EventExplorer.findOneAndUpdate(
+            { email },
+            { password: hashedPassword, otp: null, otpExpiresAt: null },
+            { new: true }
+        );
+
+        res.status(200).json({ message: "Password updated successfully" });
+    } catch (error) {
+        console.error("Error updating password:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
 module.exports = {
     findAll,
     save,
     findById,
     deleteById,
     update,
-    updateProfilePicture
+    updateProfilePicture,
+    sendOtp,
+    verifyOtp,
+    resetPassword
 }
