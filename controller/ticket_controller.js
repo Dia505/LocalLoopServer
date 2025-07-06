@@ -99,6 +99,51 @@ const totalTicketsOfUpcomingEvents = async (req, res) => {
     }
 };
 
+const checkSoldOut = async (req, res) => {
+    try {
+        const { eventId } = req.params;
+
+        const tickets = await Ticket.find({ eventId });
+
+        if (tickets.length === 0) {
+            return res.status(404).json({ message: "No tickets found for this event." });
+        }
+
+        const isSoldOut = tickets.every(ticket => ticket.ticketQuantity === ticket.sold);
+
+        return res.status(200).json({ soldOut: isSoldOut });
+    } catch (err) {
+        return res.status(500).json({ message: "Failed to check if event is sold out", error: err.message });
+    }
+};
+
+const getTicketAvailability = async (req, res) => {
+    try {
+        const { eventId } = req.params;
+
+        const tickets = await Ticket.find({ eventId });
+
+        if (tickets.length === 0) {
+            return res.status(404).json({ message: "No tickets found for this event." });
+        }
+
+        const availability = tickets.map(ticket => ({
+            ticketType: ticket.ticketType,
+            ticketId: ticket._id,
+            ticketQuantity: ticket.ticketQuantity,
+            sold: ticket.sold,
+            soldOut: ticket.sold >= ticket.ticketQuantity
+        }));
+
+        return res.status(200).json({ availability });
+    } catch (err) {
+        return res.status(500).json({
+            message: "Failed to check ticket availability",
+            error: err.message
+        });
+    }
+};
+
 module.exports = {
     findAll,
     save,
@@ -106,5 +151,7 @@ module.exports = {
     deleteById,
     deleteByEventId,
     update,
-    totalTicketsOfUpcomingEvents
+    totalTicketsOfUpcomingEvents,
+    checkSoldOut,
+    getTicketAvailability
 }
