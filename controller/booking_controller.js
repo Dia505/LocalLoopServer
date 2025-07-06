@@ -158,11 +158,54 @@ const getTotalBookingsOfUpcomingEvents = async (req, res) => {
   }
 };
 
+const checkFullBooking = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+
+    const bookings = await Booking.find({ eventId }).populate("eventId");
+
+    if (bookings.length === 0) {
+      return res.json({ fullyBooked: false });
+    }
+
+    const totalSeatsBooked = bookings.reduce((sum, booking) => sum + booking.seats, 0);
+
+    const totalSeats = bookings[0].eventId.totalSeats;
+
+    const fullyBooked = totalSeatsBooked >= totalSeats;
+
+    return res.json({ fullyBooked });
+  } catch (e) {
+    console.error("Error checking full booking:", e);
+    res.status(500).json({ error: "Failed to check full booking" });
+  }
+};
+
+const getAvailableSeats = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+
+    const event = await Event.findById(eventId);
+    if (!event) return res.status(404).json({ message: "Event not found" });
+
+    const bookings = await Booking.find({ eventId });
+
+    const totalBooked = bookings.reduce((acc, curr) => acc + curr.seats, 0);
+    const availableSeats = event.totalSeats - totalBooked;
+
+    res.json({ availableSeats: availableSeats >= 0 ? availableSeats : 0 });
+  } catch (e) {
+    res.status(500).json({ message: "Error checking available seats", error: e.message });
+  }
+};
+
 module.exports = {
   findAll,
   save,
   findByEventId,
   findUpcomingBooking,
   findPastBooking,
-  getTotalBookingsOfUpcomingEvents
+  getTotalBookingsOfUpcomingEvents,
+  checkFullBooking,
+  getAvailableSeats
 }
